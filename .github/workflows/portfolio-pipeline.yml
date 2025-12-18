@@ -1,0 +1,39 @@
+name: Portfolio Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10']
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-reproducible.txt
+    
+    - name: Run portfolio pipeline
+      run: |
+        python validation_first_pipeline.py --end-date 2025-12-18
+    
+    - name: Upload results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: portfolio-data
+        path: portfolio_data/
